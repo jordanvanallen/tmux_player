@@ -1,41 +1,70 @@
+use failure::{Error, ResultExt};
 use structopt::StructOpt;
 use mpris::PlayerFinder;
+
+use std::str::FromStr;
+
+#[derive(Debug)]
+enum SongAttribute {
+    Artist,
+    Song,
+    Both
+}
+
+impl FromStr for SongAttribute {
+    type Err = String;
+
+    fn from_str(val: &str) -> Result<Self, Self::Err> {
+        match val {
+            "artist" => Ok(SongAttribute::Artist),
+            "song" => Ok(SongAttribute::Song),
+            "both" => Ok(SongAttribute::Both),
+            _ => Err("Can't parse input".to_string()),
+        }
+    }
+}
 
 #[derive(Debug, StructOpt)]
 struct Opt {
     #[structopt(help = "Select what you want returned, 'artist', 'song', or 'both'")]
-    song_attributes: String,
+    song_attribute: SongAttribute,
 }
 
 fn main() {
-    let opt = Opt::from_args();
-
-    match opt.song_attributes.as_str() {
-        "artist" | "song" | "both" => (),
-        _ => eprintln!("Valid parameters are 'artist', 'song', or 'both'"),
-    }
-
-    let player = PlayerFinder::new()
-        .expect("could not connect to DBus")
-        .find_active()
-        .expect("could not find any player");
-
-    let metadata  = player.get_metadata().expect("could not get player metadata");
-
-    match metadata.album_artists() {
-        Some(_) => print_spotify_metadata(opt, metadata),
-        None => (),
+    match print_spotify_metadata() {
+        Ok(_) => (),
+        Err(_error) => {
+            std::process::exit(1);
+        }
     }
 }
 
-fn print_spotify_metadata(opt: Opt, metadata: mpris::Metadata) {
-    let artists   = metadata.artists().expect("could not find artists");
-    let song_name = metadata.title().expect("Could not find song name");
+fn print_spotify_metadata() -> Result<(), Error> {
+    let user_choice = Opt::from_args().song_attribute;
 
-    match opt.song_attributes.as_str() {
-        "artist" => println!("♫ {}", artists[0]),
-        "song" => println!("♫ {}", song_name),
-        "both" => println!("♫ {} - {}", artists[0], song_name),
-        _ => (),
+    let player_finder = PlayerFinder::new()
+        .context("Could not connect to D-Bus")?;
+
+    let player = player_finder
+        .find_active()
+        .context("Could not find an active player")?;
+
+    let metadata  = player
+        .get_metadata()
+        .context("could not get player metadata")?;
+
+    // Ensure the metadata has actual artist data
+    match metadata.album_artists() {
+        Some(_) => (),
+        None => std::process::exit(1),
+    }
+
+    let artists   = metadata.artists().unwrap();
+    let song_name = metadata.title().unwrap();
+
+    match user_choice {
+        SongAttribute::Artist => Ok(println!("♫ {}", artists[0])),
+        SongAttribute::Song => Ok(println!("♫ {}", song_name)),
+        SongAttribute::Both => Ok(println!("♫ {} - {}", artists[0], song_name))
     }
 }

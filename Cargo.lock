@@ -480,6 +480,7 @@ dependencies = [
 name = "tmux_player"
 version = "0.1.0"
 dependencies = [
+ "failure",
  "mpris",
  "structopt",
 ]
