@@ -19,7 +19,7 @@ impl FromStr for SongAttribute {
             "artist" => Ok(SongAttribute::Artist),
             "song" => Ok(SongAttribute::Song),
             "both" => Ok(SongAttribute::Both),
-            _ => Err("Can't parse input".to_string()),
+            _ => Err("Can't parse input, parameter options are 'artist', 'song', or 'both'".to_string()),
         }
     }
 }
