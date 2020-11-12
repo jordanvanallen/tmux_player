@@ -1,5 +1,5 @@
 [package]
-name = "tmux_spotify"
+name = "tmux_player"
 version = "0.1.0"
 authors = ["Jordan Van Allen <jordanvanallen@pm.me>"]
 edition = "2018"
