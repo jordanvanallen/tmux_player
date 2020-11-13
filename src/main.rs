@@ -7,7 +7,8 @@ use std::str::FromStr;
 #[derive(Debug)]
 enum UserChoice {
     Metadata(Metadata),
-    PlayerInteraction(PlayerInteraction)
+    PlayerInteraction(PlayerInteraction),
+    Volume(Volume),
 }
 
 #[derive(Debug)]
@@ -23,6 +24,13 @@ enum PlayerInteraction {
     Stop,
     Next,
     Previous
+}
+
+#[derive(Debug)]
+enum Volume {
+    Get,
+    Raise,
+    Lower,
 }
 
 impl FromStr for UserChoice {
@@ -41,6 +49,11 @@ impl FromStr for UserChoice {
             // Change song
             "next" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Next)),
             "previous" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Previous)),
+
+            // --- Volume ---
+            "get_volume" => Ok(UserChoice::Volume(Volume::Get)),
+            "raise_volume" => Ok(UserChoice::Volume(Volume::Raise)),
+            "lower_volume" => Ok(UserChoice::Volume(Volume::Lower)),
 
             _ => Err("Can't parse input".to_string()),
         }
@@ -65,7 +78,33 @@ fn main() {
             Ok(_) => (),
             Err(_error) => std::process::exit(2),
         },
+        UserChoice::Volume(_) => match player_volume(user_choice) {
+            Ok(_) => (),
+            Err(_error) => std::process::exit(3),
+        }
     };
+}
+
+fn player_volume(user_choice: UserChoice) -> Result<(), Error> {
+    let player = get_player()?;
+
+    let current_volume = player.get_volume().context("Could not get player volume")?;
+
+    match user_choice {
+        UserChoice::Volume(Volume::Get) => Ok(println!("{:.1}", current_volume * 100.0)),
+        UserChoice::Volume(Volume::Raise) => {
+            let new_volume = current_volume + 0.05;
+            println!("New volume is: {}", new_volume);
+            player.set_volume(new_volume.max(1.0)).context("Could not raise volume")?;
+            Ok(())
+        },
+        UserChoice::Volume(Volume::Lower) => {
+            let new_volume = current_volume - 0.05;
+            player.set_volume(new_volume.min(0.0)).context("Could not lower volume")?;
+            Ok(())
+        },
+        _ => Ok(()),
+    }
 }
 
 fn interact_with_player(user_choice: UserChoice) -> Result<(), Error> {
