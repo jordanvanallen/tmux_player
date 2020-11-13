@@ -1,7 +1,9 @@
 # tmux_player
-Shows the current playing Song, Artist (or both) of your player in your Tmux status line (Intended for spotify use on Linux).
+Useful for those who live in TMUX (or those with window tiling mangers, polybar users, etc.) and want to see their current playing track, artist, or both.
 
-This script can also be used to pause/play your player. Useful when bound with WMs like i3, bspwm, etc.
+In addition to this, can be used for interacting with the player to do things like skip to the next song, adjust the volume, or pause/play.
+
+This script is intended for use with spotify, but seems to work fine with other audio players I've tested.
 
 ## Usage
 
@@ -16,6 +18,12 @@ This script can also be used to pause/play your player. Useful when bound with W
 1. Add the function to your Tmux status line with something like `set -g status-right "#(tmux_player both) | %Y-%m-%d %H:%M"`
 * (You can also use either `#(tmux_player artist)` or `#(tmux_player song)` for just the artist or song respectively)
 
-### Pause/Play
-1. Use `tmux_player pause_play` to execute pause/play against your current player
-* This is mostly useful for those with WMs like i3, bspwm etc. by binding it with something like `bindsym Mod1+p exec path/to/binary/tmux_player pause_play`
+### Interact with audio player
+* Pause/Play your audio player using `tmux_player pause_play`
+* Skip to the next song using `tmux_player next`
+* Go back to the previous song by using `tmux_player previous`
+
+#### Volume adjustment and fetching
+* Get the current audio level of your player (as a percentage) using `tmux_player get_volume`
+* Raise the volume by 5% using `tmux_player raise_volume`
+* Lower the volume by 5% using `tmux_player lower_volume`
