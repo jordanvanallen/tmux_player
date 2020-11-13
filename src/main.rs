@@ -19,8 +19,7 @@ enum Metadata {
 
 #[derive(Debug)]
 enum PlayerInteraction {
-    Play,
-    Pause
+    PausePlay,
 }
 
 impl FromStr for UserChoice {
@@ -28,11 +27,18 @@ impl FromStr for UserChoice {
 
     fn from_str(val: &str) -> Result<Self, Self::Err> {
         match val {
+            // Metadata
             "artist" => Ok(UserChoice::Metadata(Metadata::Artist)),
             "song" => Ok(UserChoice::Metadata(Metadata::Song)),
             "both" => Ok(UserChoice::Metadata(Metadata::Both)),
-            "play" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Play)),
-            "pause" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Pause)),
+
+            // Player interations
+            //
+            // Play, pause, and pause_play all currently lead to the same branch, but
+            // this can easily be changed if needed for whatever reason
+            "play" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::PausePlay)),
+            "pause" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::PausePlay)),
+            "pause_play" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::PausePlay)),
             _ => Err("Can't parse input".to_string()),
         }
     }
@@ -63,8 +69,7 @@ fn interact_with_player(user_choice: UserChoice) -> Result<(), Error> {
     let player = get_player()?;
 
     match user_choice {
-        UserChoice::PlayerInteraction(PlayerInteraction::Pause) => Ok(player.pause().context("could not pause player")?),
-        UserChoice::PlayerInteraction(PlayerInteraction::Play) => Ok(player.play().context("could not play player")?),
+        UserChoice::PlayerInteraction(PlayerInteraction::PausePlay) => Ok(player.play_pause().context("Could not pause/play the player")?),
         _ => Ok(()),
     }
 }
