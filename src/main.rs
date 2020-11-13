@@ -90,10 +90,20 @@ fn print_player_metadata(user_choice: UserChoice) -> Result<(), Error> {
     let artists   = metadata.artists().unwrap();
     let song_name = metadata.title().unwrap();
 
+    let status = player
+        .get_playback_status()
+        .context("Could not get playback status")?;
+
+    let playback_symbol = match status {
+        mpris::PlaybackStatus::Playing => "▶",
+        mpris::PlaybackStatus::Paused => "❙❙",
+        mpris::PlaybackStatus::Stopped => "◼"
+    };
+
     match user_choice {
-        UserChoice::Metadata(Metadata::Artist) => Ok(println!("♫ {}", artists[0])),
-        UserChoice::Metadata(Metadata::Song) => Ok(println!("♫ {}", song_name)),
-        UserChoice::Metadata(Metadata::Both) => Ok(println!("♫ {} - {}", artists[0], song_name)),
+        UserChoice::Metadata(Metadata::Artist) => Ok(println!("{} {}", playback_symbol, artists[0])),
+        UserChoice::Metadata(Metadata::Song) => Ok(println!("{} {}", playback_symbol, song_name)),
+        UserChoice::Metadata(Metadata::Both) => Ok(println!("{} {} - {}", playback_symbol, artists[0], song_name)),
         _ => Ok(())
     }
 }
