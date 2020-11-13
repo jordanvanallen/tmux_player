@@ -20,6 +20,9 @@ enum Metadata {
 #[derive(Debug)]
 enum PlayerInteraction {
     PausePlay,
+    Stop,
+    Next,
+    Previous
 }
 
 impl FromStr for UserChoice {
@@ -27,18 +30,18 @@ impl FromStr for UserChoice {
 
     fn from_str(val: &str) -> Result<Self, Self::Err> {
         match val {
-            // Metadata
+            // --- Metadata ---
             "artist" => Ok(UserChoice::Metadata(Metadata::Artist)),
             "song" => Ok(UserChoice::Metadata(Metadata::Song)),
             "both" => Ok(UserChoice::Metadata(Metadata::Both)),
 
-            // Player interations
-            //
-            // Play, pause, and pause_play all currently lead to the same branch, but
-            // this can easily be changed if needed for whatever reason
-            "play" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::PausePlay)),
-            "pause" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::PausePlay)),
+            // --- Player interations ---
             "pause_play" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::PausePlay)),
+            "stop" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Stop)),
+            // Change song
+            "next" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Next)),
+            "previous" => Ok(UserChoice::PlayerInteraction(PlayerInteraction::Previous)),
+
             _ => Err("Can't parse input".to_string()),
         }
     }
@@ -70,6 +73,9 @@ fn interact_with_player(user_choice: UserChoice) -> Result<(), Error> {
 
     match user_choice {
         UserChoice::PlayerInteraction(PlayerInteraction::PausePlay) => Ok(player.play_pause().context("Could not pause/play the player")?),
+        UserChoice::PlayerInteraction(PlayerInteraction::Stop) => Ok(player.stop().context("Could not stop the player")?),
+        UserChoice::PlayerInteraction(PlayerInteraction::Next) => Ok(player.next().context("Could not get next song")?),
+        UserChoice::PlayerInteraction(PlayerInteraction::Previous) => Ok(player.previous().context("Could not get previous song")?),
         _ => Ok(()),
     }
 }
